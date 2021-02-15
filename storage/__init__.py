@@ -9,11 +9,20 @@ class Store(object):
 
     def add_wish(self, url):
         with sa_orm.Session(self.engine) as session:
-            wish = schema.Wish(url=url)
-            session.add(wish)
+            wishes_for_url = session.query(schema.Wish).filter_by(url=url)
+
+            if wishes_for_url.count() == 0:
+                wish = schema.Wish(url=url)
+                session.add(wish)
+
+            else:
+                wish = wishes_for_url.scalar()
+                wish.priority = wish.priority + 1
+                session.add(wish)
+
             session.commit()
 
     def get_wishes(self):
         with sa_orm.Session(self.engine) as session:
-            return session.execute(sa.select(schema.Wish).order_by('id')).scalars().all()
+            return session.execute(sa.select(schema.Wish).order_by(sa.desc('priority'), 'id')).scalars().all()
 
