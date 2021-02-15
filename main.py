@@ -1,8 +1,21 @@
+import requests
 import sqlalchemy as sa
 
 import storage
 
-store = storage.Store()
-store.add_wish('https://en.wikipedia.org/')
+STARTING_URLS = [
+    'https://en.wikipedia.org/',
+    'https://fsf.org/',
+]
 
-print([(w.url, w.priority) for w in store.get_wishes()])
+store = storage.Store()
+
+wish = store.get_next_wish()
+
+if wish is None:
+    for url in STARTING_URLS:
+        store.add_wish(url)
+
+else:
+    response = requests.get(wish)
+    print(response.text)

@@ -22,7 +22,16 @@ class Store(object):
 
             session.commit()
 
-    def get_wishes(self):
+    def get_next_wish(self):
         with sa_orm.Session(self.engine) as session:
-            return session.execute(sa.select(schema.Wish).order_by(sa.desc('priority'), 'id')).scalars().all()
+            wish = session.execute(sa.select(schema.Wish).order_by(sa.desc('priority'), 'id')).scalar()
+
+            if wish is None:
+                return None
+
+            url = wish.url
+            session.delete(wish)
+            session.commit()
+
+        return url
 
